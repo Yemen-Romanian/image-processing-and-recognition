@@ -1,9 +1,7 @@
 import numpy as np
-import cv2
-import matplotlib.pyplot as plt
 
 
-def otsu(image_hist, imax=255, eps=0.0001):
+def otsu(image_hist, imax=256, eps=0.0001):
     pxl_probs = image_hist / np.sum(image_hist)
     variances = []
 
@@ -27,7 +25,7 @@ def otsu(image_hist, imax=255, eps=0.0001):
 
 
 def histogram(image):
-    hist = np.zeros(255)
+    hist = np.zeros(256)
     for i in range(image.shape[0]):
         for j in range(image.shape[1]):
             hist[image[i, j]] += 1
@@ -35,16 +33,14 @@ def histogram(image):
     return hist
 
 
-if __name__ == '__main__':
-    image = cv2.imread('examples/Lenna_(test_image).png')
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    plt.imshow(image, cmap='gray')
-    plt.title('Original image')
-    plt.show()
+def get_grayscale(image, input='BGR'):
+    if input == 'BGR':
+        coefficients = [0.11, 0.53, 0.36]
+    else:
+        coefficients = [0.36, 0.53, 0.11]
 
-    threshold = otsu(histogram(image))
-    binarized_image = image > threshold
-    plt.imshow(binarized_image, cmap='gray')
-    plt.title('Otsu method')
-    plt.show()
+    grayscale = np.zeros(image.shape[:-1])
+    for channel in range(image.shape[2]):
+        grayscale += coefficients[channel] * image[:, :, channel]
 
+    return grayscale.astype(np.int)

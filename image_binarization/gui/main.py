@@ -1,13 +1,11 @@
-# Only needed for access to command line arguments
 import sys
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 
-
-from widgets import Slider, ImageListViewer, Histogram
-
+from widgets import (
+    Slider, ImageListViewer,
+    Histogram, ImageGrid
+)
 
 class MainWindow(QMainWindow):
 
@@ -21,12 +19,17 @@ class MainWindow(QMainWindow):
         self.slider = Slider()
         self.viewer = ImageListViewer()
         self.hist = Histogram()
+        self.im_grid = ImageGrid()
 
         self.viewer.sendPath.connect(self.hist.plot_histogram)
+        self.viewer.sendPath.connect(self.im_grid.set_images)
+        self.im_grid.sendOtsu.connect(self.hist.plot_threshold)
+        self.slider.sendThreshold.connect(self.im_grid.update_manual)
+
         layout.addWidget(self.slider)
         layout.addWidget(self.hist)
+        layout.addWidget(self.im_grid)
         layout.addWidget(self.viewer)
-        self.viewer.resize(100, 300)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -40,7 +43,3 @@ window = MainWindow()
 window.show()
 
 app.exec_()
-
-
-# Your application won't reach here until you exit and the event 
-# loop has stopped.
