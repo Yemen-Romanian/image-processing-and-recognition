@@ -9,8 +9,7 @@ from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
 import cv2
 
-# import ..algorithms.binarization
-from ..algorithms.binarization import(
+from algorithms.binarization import(
     histogram,
     otsu
 )
@@ -47,6 +46,8 @@ class Slider(QWidget):
 
 class ImageListViewer(QWidget):
 
+    sendPath = pyqtSignal(str)
+
     def __init__(self):
         super(ImageListViewer, self).__init__()
 
@@ -56,7 +57,7 @@ class ImageListViewer(QWidget):
         # self.listview.setViewMode(QListView.IconMode)
         self.listwidget = QListWidget()
         self.listwidget.setViewMode(QListView.IconMode)
-        self.listwidget.setIconSize(QSize(32, 32))
+        self.listwidget.setIconSize(QSize(64, 64))
 
         layout.addWidget(self.listwidget)
         # layout.addWidget(self.listview)
@@ -64,28 +65,50 @@ class ImageListViewer(QWidget):
         _fromUtf8 = lambda s: s
 
         files = []
-        for file in os.listdir("C:/Users/Zhenya/image-processing-and-recognition" +
-                                        "/image_binarization/examples"):
-            # if file.endswith(".png"):
-            files.append(os.path.join(os.getcwd(), file))
+
+        self.image_dir = os.path.join(
+             "C:" + os.sep, "Users", "Zhenya", "image-processing-and-recognition",
+            "image_binarization", "examples"
+        )
+        for file in os.listdir(self.image_dir):
+            files.append(os.path.join(self.image_dir, file))
 
         for x in files:
             item = QListWidgetItem()
             icon = QIcon()
             icon.addPixmap(QPixmap(_fromUtf8(x)), QIcon.Normal, QIcon.Off)
             item.setIcon(icon)
-            item.setText(x)
+            item.setText(x.split("\\")[-1])
             self.listwidget.addItem(item)
 
         self.listwidget.itemDoubleClicked.connect(self.double_click)
         self.setLayout(layout)
 
     def double_click(self, item):
-        image = cv2.imread(item.text())
-        image = cv2.cvtColor(cv2.COLOR_BGR2GRAY)
-        hist = histogram(image)
+        filename = item.text()
+        filename = os.path.join(self.image_dir, filename)
+        print(filename)
+        self.sendPath.emit(filename)
 
-app = QApplication(sys.argv)
-ex = ImageListViewer()
-ex.show()
-sys.exit(app.exec_())
+
+class Histogram(QWidget):
+
+    def __init__(self):
+        super(Histogram, self).__init__()
+
+        self.hist_widget = pg.HistogramLUT
+
+    @pyqtSlot(str)
+    def plot_histogram(self, path):
+        print(path)
+        image = cv2.imread(path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        hist = histogram(image)
+        print(hist)
+        self.hist_widget.plot(range(len(hist)), hist)
+
+
+# app = QApplication(sys.argv)
+# ex = ImageListViewer()
+# ex.show()
+# sys.exit(app.exec_())

@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 
-from widgets import Slider
+from widgets import Slider, ImageListViewer, Histogram
 
 
 class MainWindow(QMainWindow):
@@ -16,24 +16,29 @@ class MainWindow(QMainWindow):
         
         self.setWindowTitle("Image Binarization")
 
-        layout = QHBoxLayout()
-        layout1 = QVBoxLayout()
+        layout = QVBoxLayout()
 
         self.slider = Slider()
-        layout1.addWidget(self.slider)
+        self.viewer = ImageListViewer()
+        self.hist = Histogram()
 
+        self.viewer.sendPath.connect(self.hist.plot_histogram)
+        layout.addWidget(self.slider)
+        layout.addWidget(self.hist)
+        layout.addWidget(self.viewer)
+        self.viewer.resize(100, 300)
 
         widget = QWidget()
-        widget.setLayout(layout1)
+        widget.setLayout(layout)
         self.setCentralWidget(widget)
+        self.showMaximized()
 
 
 app = QApplication(sys.argv)
 
 window = MainWindow()
-window.show() # IMPORTANT!!!!! Windows are hidden by default.
+window.show()
 
-# Start the event loop.
 app.exec_()
 
 
